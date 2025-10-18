@@ -17,7 +17,7 @@ struct EventsList: View {
     @StateObject private var calendarManager = CalendarManager()
     @State private var showAlert = false
     @State private var alertMessage = ""
-
+    
     var body: some View {
         ZStack {
             if isLoading {
@@ -42,29 +42,29 @@ struct EventsList: View {
                         }
                         
                         Spacer()
-
-//                        VStack {
-//                            Button("Run Permission Test") {
-//                                Task {
-//                                    await calendarManager.debugRequestAccess()
-//                                }
-//                            }
-//                            .buttonStyle(.borderedProminent)
-//                            .tint(.red)
-//                            Spacer() // Pushes the button to the top
-//                        }
-//                        .zIndex(1) // Ensures the button is on top of the list
-//
-//                        if isLoading {
-//                            // ...
-//                        } else if viewModel.events.isEmpty {
-//                            // ...
-//                        } else {
-//                            List(viewModel.events) { event in
-//                                // ... your list row code
-//                            }
-//                        }
-                    
+                        
+                        //                        VStack {
+                        //                            Button("Run Permission Test") {
+                        //                                Task {
+                        //                                    await calendarManager.debugRequestAccess()
+                        //                                }
+                        //                            }
+                        //                            .buttonStyle(.borderedProminent)
+                        //                            .tint(.red)
+                        //                            Spacer() // Pushes the button to the top
+                        //                        }
+                        //                        .zIndex(1) // Ensures the button is on top of the list
+                        //
+                        //                        if isLoading {
+                        //                            // ...
+                        //                        } else if viewModel.events.isEmpty {
+                        //                            // ...
+                        //                        } else {
+                        //                            List(viewModel.events) { event in
+                        //                                // ... your list row code
+                        //                            }
+                        //                        }
+                        
                         Button {
                             // Call our new function when the button is tapped
                             addEventToCalendar(event)
@@ -99,13 +99,13 @@ struct EventsList: View {
     // 4. Add this helper function to the view
     // In ContentView.swift -> EventsList
     // In ContentView.swift -> EventsList
-
+    
     // 1. REPLACE your old `addEventToCalendar` function with this new one.
     private func addEventToCalendar(_ event: Event) {
         Task {
             // Use a switch statement to handle all possible permission statuses
             switch calendarManager.authorizationStatus {
-            
+                
             case .fullAccess, .writeOnly:
                 // Access is already granted, so save the event.
                 await saveEvent(event)
@@ -133,7 +133,7 @@ struct EventsList: View {
             }
         }
     }
-
+    
     // 2. ADD this new helper function right below the one above.
     private func saveEvent(_ event: Event) async {
         // First, make sure we can get valid dates for the event.
@@ -157,4 +157,5 @@ struct EventsList: View {
         }
         showAlert = true
     }
-
+    
+}

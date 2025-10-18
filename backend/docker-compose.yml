@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "${PORT:-8642}:${PORT:-8642}"
+    environment:
+      - PORT=${PORT:-8642}
+    restart: unless-stopped

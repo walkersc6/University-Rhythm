@@ -22,13 +22,13 @@ struct ContentView: View {
                         Color(red: 0.7, green: 0.85, blue: 1.0)
                     ]),
                     startPoint: .topLeading,
-                    endPoint: .bottomTrailing)
-//                Color.softGreen.ignoresSafeArea()
-                
+                    endPoint: .bottomTrailing
+                )
                 .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(alignment: .center, spacing: 0) {
+                        
                         // Floating header
                         ZStack {
                             Text("Your Learning Journey")
@@ -55,19 +55,6 @@ struct ContentView: View {
                                 path.addLine(to: CGPoint(x: size.width, y: size.height))
                                 path.addLine(to: CGPoint(x: 0, y: size.height))
                                 path.closeSubpath()
-                                
-//                                context.fill(
-//                                    path,
-//                                    with: .linearGradient(
-//                                        Gradient(colors: [
-//                                            Color(red: 0.4, green: 0.6, blue: 0.3),
-//                                            Color(red: 0.5, green: 0.7, blue: 0.4),
-//                                            Color(red: 0.8, green: 0.8, blue: 0.8)
-//                                        ]),
-//                                        startPoint: CGPoint(x: 0.5, y: 0),
-//                                        endPoint: CGPoint(x: 0.5, y: 1)
-//                                    )
-//                                )
                             }
                             .frame(height: 1000)
                             
@@ -105,6 +92,10 @@ struct ContentView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
         }
+        // ✅ Fetch modules when the view appears
+        .task {
+            await viewModel.fetchModules()
+        }
     }
 }
 
@@ -114,22 +105,18 @@ struct MountainModuleSection: View {
     @ObservedObject var viewModel: RoadmapViewModel
     
     var sortedLessons: [Lesson] {
-        viewModel.getLessonsForModule(module.id)
+        viewModel.getLessonsForModule(module.module_id)
     }
     
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             // Module name marker
             VStack(spacing: 4) {
-//                Text("Stage")
-//                    .font(.caption)
-//                    .foregroundColor(.secondary)
-                Text(module.name)
+                Text(module.module_name)
                     .font(.headline)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 140)
-//                    .offset(y:150)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
@@ -161,6 +148,12 @@ struct MountainModuleSection: View {
                 }
             }
         }
+        // ✅ Fetch lessons for this module when it appears
+        .onAppear {
+            Task {
+                await viewModel.fetchLessons(moduleId: module.module_id)
+            }
+        }
     }
 }
 
@@ -184,13 +177,13 @@ struct MountainLessonBubble: View {
                     )
                     .shadow(radius: 6)
                 
-                Image(systemName: lesson.isVideo ? "video.fill" : "book.fill")
+                Image(systemName: lesson.is_video ? "video.fill" : "book.fill")
                     .font(.system(size: 28))
                     .foregroundColor(.white)
             }
             .frame(width: 80, height: 80)
             
-            Text(lesson.markdown.split(separator: "\n").first.map(String.init) ?? "Lesson")
+            Text(lesson.lesson_name.split(separator: "\n").first.map(String.init) ?? "Lesson")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundColor(.primary)
@@ -204,6 +197,7 @@ struct MountainLessonBubble: View {
 #Preview {
     ContentView()
 }
+
 
 
 // MARK: - Lesson Detail View
@@ -243,14 +237,14 @@ struct LessonDetailView: View {
                     // Lesson content
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 8) {
-                            Image(systemName: lesson.is_Video ? "video.fill" : "doc.fill")
+                            Image(systemName: lesson.is_video ? "video.fill" : "doc.fill")
                                 .foregroundColor(.blue)
-                            Text(lesson.isVideo ? "Video Lesson" : "Text Lesson")
+                            Text(lesson.is_video ? "Video Lesson" : "Text Lesson")
                                 .font(.caption)
                                 .fontWeight(.semibold)
                         }
                         
-                        Text(lesson.markdown)
+                        Text(lesson.lesson)
                             .font(.body)
                     }
                     .padding()

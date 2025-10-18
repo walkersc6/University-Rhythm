@@ -21,6 +21,7 @@ struct Module: Codable, Identifiable {
 
 struct Lesson: Codable, Identifiable {
     let lesson_id: Int
+    let lesson_name: String
     let module_id: Int
     let is_video: Bool
     let lesson: String
@@ -84,17 +85,41 @@ class RoadmapViewModel: ObservableObject {
     private let jsonDecoder = JSONDecoder()
 
     // Fetch modules
+//    func fetchModules() async {
+//        guard let url = URL(string: "\(baseURL)/modules") else {
+//            print("Invalid modules URL")
+//            return
+//        }
+//        do {
+//            let (data, _) = try await URLSession.shared.data(from: url)
+//            let response = try jsonDecoder.decode(ModulesResponse.self, from: data)
+//            modules = response.modules
+//        } catch {
+//            print("Failed to fetch modules:", error)
+//        }
+//    }
+
     func fetchModules() async {
         guard let url = URL(string: "\(baseURL)/modules") else {
-            print("Invalid modules URL")
+            print("❌ Invalid modules URL")
             return
         }
+        print("🌐 Fetching modules from:", url.absoluteString)
+
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try jsonDecoder.decode(ModulesResponse.self, from: data)
-            modules = response.modules
+            let (data, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse {
+                print("✅ Response status:", httpResponse.statusCode)
+            }
+            print("📦 Raw JSON:", String(data: data, encoding: .utf8) ?? "nil")
+
+            let decoded = try jsonDecoder.decode(ModulesResponse.self, from: data)
+            DispatchQueue.main.async {
+                self.modules = decoded.modules
+                print("✅ Loaded \(decoded.modules.count) modules")
+            }
         } catch {
-            print("Failed to fetch modules:", error)
+            print("❌ Failed to fetch modules:", error)
         }
     }
 
@@ -111,6 +136,10 @@ class RoadmapViewModel: ObservableObject {
         } catch {
             print("Failed to fetch lessons:", error)
         }
+    }
+    
+    func getLessonsForModule(_ moduleId: Int) -> [Lesson] {
+        lessons.filter { $0.module_id == moduleId }
     }
 
     // Fetch multiple choice questions for a lesson
@@ -146,6 +175,11 @@ class RoadmapViewModel: ObservableObject {
             print("Failed to fetch TF questions:", error)
         }
     }
+    
+    func getTFQuestionsForLesson(_ lessonId: Int) -> [TFQuestion] {
+        tfQuestions.filter { $0.lesson_id == lessonId }
+    }
+
 }
 
 

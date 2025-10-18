@@ -37,6 +37,7 @@ Lessons table.
 |--------|------|-------------|
 | lesson_id | int | Primary key |
 | module_id | int | Foreign key to modules |
+| lesson_name | text | Name of the lesson |
 | is_video | bool | Whether this lesson is a video |
 | lesson | text | Lesson content/URL |
 | order_num | int4 | Order within module |
@@ -132,6 +133,7 @@ curl http://localhost:8642/modules/1/lessons
     {
       "lesson_id": 1,
       "module_id": 1,
+      "lesson_name": "Introduction to Variables",
       "is_video": true,
       "lesson": "https://video-url.com",
       "order_num": 1,
@@ -140,6 +142,7 @@ curl http://localhost:8642/modules/1/lessons
     {
       "lesson_id": 2,
       "module_id": 1,
+      "lesson_name": "Data Types",
       "is_video": false,
       "lesson": "Text content of the lesson...",
       "order_num": 2,
@@ -152,6 +155,7 @@ curl http://localhost:8642/modules/1/lessons
 **Response Fields:**
 - `lesson_id` (int) - Unique identifier for the lesson
 - `module_id` (int) - ID of the parent module
+- `lesson_name` (string) - Name of the lesson
 - `is_video` (bool) - True if lesson is a video, false if text content
 - `lesson` (string) - Video URL if is_video=true, otherwise text content
 - `order_num` (int) - Sequential order within the module

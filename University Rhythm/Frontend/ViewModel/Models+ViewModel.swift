@@ -84,6 +84,21 @@ struct Event: Codable, Identifiable {
     let createdAt: String
     let updatedAt: String
 
+    var eventStartDate: Date? {
+            let dateString = "\(date) \(startTime)"
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            formatter.timeZone = TimeZone.current // Use the user's local timezone
+            return formatter.date(from: dateString)
+        }
+    
+    var eventEndDate: Date? {
+            let dateString = "\(date) \(endTime)"
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            formatter.timeZone = TimeZone.current
+            return formatter.date(from: dateString)
+        }
     // Maps the JSON keys to your Swift properties
     enum CodingKeys: String, CodingKey {
         case id, category, title, description, date, location

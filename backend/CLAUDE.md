@@ -36,7 +36,7 @@ Lessons table.
 | Column | Type | Description |
 |--------|------|-------------|
 | lesson_id | uuid | Primary key |
-| module_id | uuid | Foreign key to modules |
+| module_id | int | Foreign key to modules |
 | is_video | bool | Whether this lesson is a video |
 | lesson | text | Lesson content/URL |
 | order_num | int4 | Order within module |
@@ -47,7 +47,7 @@ Modules/courses table.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| module_id | uuid | Primary key |
+| module_id | int | Primary key |
 | module_name | text | Name of the module |
 | time_start | timestamp | Module start time |
 | time_end | timestamp | Module end time |
@@ -77,9 +77,51 @@ Hello world endpoint.
 }
 ```
 
+#### GET /modules
+Get all modules.
+
+**Response:**
+```json
+{
+  "modules": [
+    {
+      "module_id": 1,
+      "module_name": "Introduction to Programming",
+      "time_start": "2025-01-01T00:00:00",
+      "time_end": "2025-01-31T23:59:59",
+      "created_at": "2025-01-01T00:00:00"
+    }
+  ]
+}
+```
+
+#### GET /modules/{module_id}/lessons
+Get all lessons for a specific module (ordered by order_num).
+
+**Parameters:**
+- `module_id` (int) - The module ID
+
+**Response:**
+```json
+{
+  "lessons": [
+    {
+      "lesson_id": "uuid",
+      "module_id": 1,
+      "is_video": true,
+      "lesson": "https://video-url.com",
+      "order_num": 1,
+      "created_at": "2025-01-01T00:00:00"
+    }
+  ]
+}
+```
+
 ## Environment Variables
 
 - `PORT` - Server port (default: 8642)
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_KEY` - Supabase anon/public key
 
 ## Running Locally
 

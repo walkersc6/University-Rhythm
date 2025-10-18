@@ -47,7 +47,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Sky background
+                // ... (The ZStack with your ScrollView remains the same)
                 LinearGradient(
                     gradient: Gradient(colors: [Color(red: 0.87, green: 0.95, blue: 1.0), Color(red: 0.7, green: 0.85, blue: 1.0)]),
                     startPoint: .topLeading,
@@ -57,15 +57,7 @@ struct ContentView: View {
                 
                 ScrollView {
                     VStack(alignment: .center, spacing: 0) {
-                        Text("Your Learning Journey")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.primary)
-                            .padding(.vertical, 50)
-                            .padding(.top, 60)
-
-                        // Mountain with trail
                         ZStack {
-                            // Mountain background
                             Canvas { context, size in
                                 var path = Path()
                                 path.move(to: CGPoint(x: 0, y: size.height))
@@ -73,24 +65,19 @@ struct ContentView: View {
                                 path.addLine(to: CGPoint(x: size.width, y: size.height))
                                 path.addLine(to: CGPoint(x: 0, y: size.height))
                                 path.closeSubpath()
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }.frame(maxHeight: .infinity)
                             
-                            // The connecting path line
                             GeometryReader { geometry in
                                 Canvas { context, size in
                                     guard pathAnchors.count > 1 else { return }
                                     var path = Path()
                                     path.move(to: geometry[pathAnchors[0]])
-                                    for i in 1..<pathAnchors.count {
-                                        path.addLine(to: geometry[pathAnchors[i]])
-                                    }
+                                    for i in 1..<pathAnchors.count { path.addLine(to: geometry[pathAnchors[i]]) }
                                     context.stroke(path, with: .color(Color.white.opacity(0.7)), style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
                                 }
                             }
 
-                            // Module titles and lesson bubbles
-                            VStack(alignment: .center, spacing: 40) {
+                            VStack(spacing: 40) {
                                 ForEach(viewModel.modules) { module in
                                     ModuleTitleView(name: module.module_name)
                                     LessonsForModuleView(moduleId: module.module_id, viewModel: viewModel)
@@ -101,14 +88,23 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .top)
                         }
                         .coordinateSpace(name: "path")
-                        .onPreferenceChange(PathPreferenceKey.self) { anchors in
-                            self.pathAnchors = anchors
-                        }
+                        .onPreferenceChange(PathPreferenceKey.self) { anchors in self.pathAnchors = anchors }
                     }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle("Your Learning Journey")
+            .navigationBarTitleDisplayMode(.large)
+            // +++ Replace the old toolbar with this new Menu +++
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        NavigationLink("Events List", destination: EventsList(viewModel: viewModel))
+                        NavigationLink("Chat Bot", destination: ChatBotView())
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                    }
+                }
+            }
         }
         .task {
             await viewModel.fetchModules()
@@ -320,6 +316,46 @@ struct TFQuestionView: View {
     }
 }
 
+// Replace the placeholder EventsList struct
+struct EventsList: View {
+    var body: some View {
+        // You can build your event list UI here
+        Text("Upcoming Events")
+            .navigationTitle("Events")
+    }
+}// ✅ Your final code should look exactly like this:
+
+//struct EventsList: View {
+//    @ObservedObject var viewModel: RoadmapViewModel
+//    
+//    var body: some View {
+//        // Access `viewModel.events` directly here inside the List.
+//        List(viewModel.events) { event in
+//            VStack(alignment: .leading, spacing: 8) {
+//                Text(event.title)
+//                    .font(.headline)
+//                Text(event.date)
+//                    .font(.subheadline)
+//                    .foregroundColor(.secondary)
+//                Text(event.location)
+//                    .font(.caption)
+//                    .foregroundColor(.gray)
+//            }
+//            .padding(.vertical, 8)
+//        }
+//        .navigationTitle("Events")
+//        .task {
+//            await viewModel.fetchEvents()
+//        }
+//    }
+//}
+
+struct ChatBotView: View {
+    var body: some View {
+        Text("Chat Bot")
+            .navigationTitle("Chat Bot")
+    }
+}
 
 // MARK: - Preview
 #Preview {

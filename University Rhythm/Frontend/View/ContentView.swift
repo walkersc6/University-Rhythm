@@ -10,6 +10,7 @@ import SwiftUI
 // MARK: - Main Content View
 struct ContentView: View {
     @StateObject private var viewModel = RoadmapViewModel()
+    @State private var floatUp = false
     
     var body: some View {
         NavigationStack {
@@ -21,17 +22,25 @@ struct ContentView: View {
                         Color(red: 0.7, green: 0.85, blue: 1.0)
                     ]),
                     startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                    endPoint: .bottomTrailing)
+//                Color.softGreen.ignoresSafeArea()
+                
                 .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(alignment: .center, spacing: 0) {
-                        Text("Your Learning Journey")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .padding(.vertical, 20)
-                        
+                        // Floating header
+                        ZStack {
+                            Text("Your Learning Journey")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(.primary)
+                                .padding(.top, 60)
+                                .padding(.bottom, 50)
+                        }
+                        .padding(.top, 60)
+                        .padding(.bottom, 70)
+                        .onAppear { floatUp.toggle() }
+
                         // Mountain with trail
                         ZStack(alignment: .bottom) {
                             // Mountain background
@@ -47,18 +56,18 @@ struct ContentView: View {
                                 path.addLine(to: CGPoint(x: 0, y: size.height))
                                 path.closeSubpath()
                                 
-                                context.fill(
-                                    path,
-                                    with: .linearGradient(
-                                        Gradient(colors: [
-                                            Color(red: 0.4, green: 0.6, blue: 0.3),
-                                            Color(red: 0.5, green: 0.7, blue: 0.4),
-                                            Color(red: 0.8, green: 0.8, blue: 0.8)
-                                        ]),
-                                        startPoint: CGPoint(x: 0.5, y: 0),
-                                        endPoint: CGPoint(x: 0.5, y: 1)
-                                    )
-                                )
+//                                context.fill(
+//                                    path,
+//                                    with: .linearGradient(
+//                                        Gradient(colors: [
+//                                            Color(red: 0.4, green: 0.6, blue: 0.3),
+//                                            Color(red: 0.5, green: 0.7, blue: 0.4),
+//                                            Color(red: 0.8, green: 0.8, blue: 0.8)
+//                                        ]),
+//                                        startPoint: CGPoint(x: 0.5, y: 0),
+//                                        endPoint: CGPoint(x: 0.5, y: 1)
+//                                    )
+//                                )
                             }
                             .frame(height: 1000)
                             
@@ -78,25 +87,12 @@ struct ContentView: View {
                                 )
                             }
                             .frame(height: 1000)
-                            
+
                             // Content on the mountain
-                            VStack(alignment: .center, spacing: 80) {
-                                // Summit
-                                VStack {
-                                    Image(systemName: "flag.2.crossed.fill")
-                                        .font(.system(size: 40))
-                                        .foregroundColor(.red)
-                                    Text("Summit")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                }
-                                .padding(.top, 40)
-                                
-                                // Modules with lessons
+                            VStack(alignment: .center, spacing: 60) {
                                 ForEach(viewModel.modules) { module in
                                     MountainModuleSection(module: module, viewModel: viewModel)
                                 }
-                                
                                 Spacer(minLength: 80)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -122,43 +118,46 @@ struct MountainModuleSection: View {
     }
     
     var body: some View {
-        VStack(alignment: .center, spacing: 16) {
-            // Module name as checkpoint marker
+        VStack(alignment: .center, spacing: 0) {
+            // Module name marker
             VStack(spacing: 4) {
-                Text("Stage")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+//                Text("Stage")
+//                    .font(.caption)
+//                    .foregroundColor(.secondary)
                 Text(module.name)
                     .font(.headline)
                     .fontWeight(.bold)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 140)
+//                    .offset(y:150)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color.white)
             .cornerRadius(12)
             .shadow(radius: 4)
+            .padding(.vertical, 20)
+            .offset(y: 150)
             
-            // Lesson bubbles in two columns
-            VStack(alignment: .center, spacing: 16) {
-                ForEach(Array(stride(from: 0, to: sortedLessons.count, by: 2)), id: \.self) { index in
-                    HStack(alignment: .center, spacing: 20) {
-                        // First lesson
-                        NavigationLink(destination: LessonDetailView(lesson: sortedLessons[index], viewModel: viewModel)) {
-                            MountainLessonBubble(lesson: sortedLessons[index])
-                        }
-                        
-                        // Second lesson (if exists)
-                        if index + 1 < sortedLessons.count {
-                            NavigationLink(destination: LessonDetailView(lesson: sortedLessons[index + 1], viewModel: viewModel)) {
-                                MountainLessonBubble(lesson: sortedLessons[index + 1])
+            // Lessons alternating left/right
+            VStack(alignment: .center, spacing: 40) {
+                ForEach(Array(sortedLessons.enumerated()), id: \.element.id) { index, lesson in
+                    HStack(alignment: .center, spacing: 0) {
+                        if index % 2 == 0 {
+                            NavigationLink(destination: LessonDetailView(lesson: lesson, viewModel: viewModel)) {
+                                MountainLessonBubble(lesson: lesson)
                             }
+                            .padding(.leading, 40)
+                            Spacer()
                         } else {
                             Spacer()
-                                .frame(width: 100)
+                            NavigationLink(destination: LessonDetailView(lesson: lesson, viewModel: viewModel)) {
+                                MountainLessonBubble(lesson: lesson)
+                            }
+                            .padding(.trailing, 40)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -171,7 +170,6 @@ struct MountainLessonBubble: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Circle with icon
             ZStack {
                 Circle()
                     .fill(
@@ -192,7 +190,6 @@ struct MountainLessonBubble: View {
             }
             .frame(width: 80, height: 80)
             
-            // Lesson name below
             Text(lesson.markdown.split(separator: "\n").first.map(String.init) ?? "Lesson")
                 .font(.caption)
                 .fontWeight(.semibold)
@@ -204,6 +201,11 @@ struct MountainLessonBubble: View {
     }
 }
 
+#Preview {
+    ContentView()
+}
+
+
 // MARK: - Lesson Detail View
 struct LessonDetailView: View {
     let lesson: Lesson
@@ -212,31 +214,36 @@ struct LessonDetailView: View {
     @State private var selectedTFAnswers: [Int: Bool] = [:]
     
     var mcQuestions: [MCQuestion] {
-        viewModel.getMCQuestionsForLesson(lesson.id)
+        viewModel.getMCQuestionsForLesson(lesson.lesson_id)
     }
     
     var tfQuestions: [TFQuestion] {
-        viewModel.getTFQuestionsForLesson(lesson.id)
+        viewModel.getTFQuestionsForLesson(lesson.lesson_id)
     }
     
     var body: some View {
         ZStack {
+            Image("astronaut")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+            
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.87, green: 0.95, blue: 1.0),
-                    Color(red: 0.7, green: 0.85, blue: 1.0)
+                    Color.white.opacity(0.4),
+                    Color.white.opacity(0.7)
                 ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
+                startPoint: .top,
+                endPoint: .bottom
             )
             .ignoresSafeArea()
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Lesson Content
+                    // Lesson content
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 8) {
-                            Image(systemName: lesson.isVideo ? "video.fill" : "doc.fill")
+                            Image(systemName: lesson.is_Video ? "video.fill" : "doc.fill")
                                 .foregroundColor(.blue)
                             Text(lesson.isVideo ? "Video Lesson" : "Text Lesson")
                                 .font(.caption)
@@ -245,15 +252,13 @@ struct LessonDetailView: View {
                         
                         Text(lesson.markdown)
                             .font(.body)
-                            .lineLimit(nil)
                     }
                     .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
                     .cornerRadius(12)
                     .shadow(radius: 4)
                     
-                    // Multiple Choice Questions
+                    // MC questions
                     if !mcQuestions.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Multiple Choice Questions")
@@ -267,7 +272,7 @@ struct LessonDetailView: View {
                         .padding()
                     }
                     
-                    // True/False Questions
+                    // TF questions
                     if !tfQuestions.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("True/False Questions")
@@ -298,11 +303,11 @@ struct MCQuestionView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(question.questionText)
+            Text(question.question_text)
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
-            ForEach([("A", question.optionA), ("B", question.optionB), ("C", question.optionC), ("D", question.optionD)], id: \.0) { key, option in
+            ForEach([("A", question.option_a), ("B", question.option_b), ("C", question.option_c), ("D", question.option_d)], id: \.0) { key, option in
                 Button(action: { selectedAnswer = key }) {
                     HStack(spacing: 12) {
                         Image(systemName: selectedAnswer == key ? "checkmark.circle.fill" : "circle")
@@ -321,6 +326,35 @@ struct MCQuestionView: View {
     }
 }
 
+//struct MCQuestionView: View {
+//    let question: MCQuestion
+//    @Binding var selectedAnswer: String?
+//    
+//    var body: some View {
+//        VStack(alignment: .leading, spacing: 12) {
+//            Text(question.questionText)
+//                .font(.subheadline)
+//                .fontWeight(.semibold)
+//            
+//            ForEach([("A", question.optionA), ("B", question.optionB), ("C", question.optionC), ("D", question.optionD)], id: \.0) { key, option in
+//                Button(action: { selectedAnswer = key }) {
+//                    HStack(spacing: 12) {
+//                        Image(systemName: selectedAnswer == key ? "checkmark.circle.fill" : "circle")
+//                            .foregroundColor(selectedAnswer == key ? .blue : .gray)
+//                        Text(option)
+//                            .foregroundColor(.primary)
+//                        Spacer()
+//                    }
+//                }
+//            }
+//        }
+//        .padding()
+//        .background(Color.white)
+//        .cornerRadius(12)
+//        .shadow(radius: 4)
+//    }
+//}
+
 // MARK: - TF Question View
 struct TFQuestionView: View {
     let question: TFQuestion
@@ -328,7 +362,7 @@ struct TFQuestionView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(question.questionText)
+            Text(question.question_text)
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
@@ -365,6 +399,10 @@ struct TFQuestionView: View {
         .cornerRadius(12)
         .shadow(radius: 4)
     }
+}
+
+extension Color {
+    static let softGreen = Color(red: 200/255, green: 230/255, blue: 201/255) // Pastel Green
 }
 
 #Preview {

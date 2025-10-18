@@ -7,10 +7,6 @@
 
 import SwiftUI
 
-
-
-import SwiftUI
-
 // MARK: - Main Content View
 struct ContentView: View {
     @StateObject private var viewModel = RoadmapViewModel()

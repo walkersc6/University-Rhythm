@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from services import ModuleService
+from services import ModuleService, QuestionService
 
 app = FastAPI()
 
@@ -39,5 +39,23 @@ def get_lessons(module_id: int):
     try:
         lessons = ModuleService.get_lessons_by_module(module_id)
         return {"lessons": lessons}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/lessons/{lesson_id}/questions")
+def get_questions(lesson_id: int):
+    """
+    Get all questions for a specific lesson.
+
+    Args:
+        lesson_id: The ID of the lesson
+
+    Returns:
+        JSON response with array of questions (both multiple choice and true/false)
+    """
+    try:
+        questions = QuestionService.get_questions_by_lesson(lesson_id)
+        return {"questions": questions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

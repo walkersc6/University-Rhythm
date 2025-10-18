@@ -1,1 +1,0 @@
-ok now I want you to use good coding principles (make a DB layer and a service layer etc) be a good little programmer but stay VERY FOCUSED ON THE TASK AT HAND. I have a supabase DB. HERE IT IS

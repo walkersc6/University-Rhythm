@@ -89,6 +89,10 @@ struct NavigationMenu: View {
             NavigationLink(destination: ChatView()) {
                 Label("Y Guide", systemImage: "message.fill")
             }
+
+            NavigationLink(destination: RewardsView()) {
+                Label("Rewards", systemImage: "trophy.fill")
+            }
         } label: {
             Image(systemName: "line.3.horizontal.circle.fill")
                 .font(.title2)

@@ -73,17 +73,33 @@ def test_update_questions():
     print_response(response)
 
 
+def test_get_events():
+    endpoint = "/events"
+    print_request("GET", endpoint)
+    response = requests.get(f"{BASE_URL}{endpoint}")
+    print_response(response)
+
+
+def test_get_event_conversation():
+    endpoint = "/events/event-123/conversation"
+    print_request("GET", endpoint)
+    response = requests.get(f"{BASE_URL}{endpoint}")
+    print_response(response)
+
+
 if __name__ == "__main__":
-    print("\n🚀 Starting API Tests...\n")
+    print("\n🚀 Starting API Tests (READ-ONLY)...\n")
 
     try:
         test_hello()
         test_get_modules()
         test_get_lessons()
         test_get_questions()
-        test_create_user()
+        # test_create_user()  # Commented out - modifies database
         test_get_user_progress()
-        test_update_questions()
+        # test_update_questions()  # Commented out - modifies database
+        test_get_events()
+        test_get_event_conversation()
 
         print("\n✅ All tests completed!\n")
     except requests.exceptions.ConnectionError:

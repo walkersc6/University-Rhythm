@@ -45,3 +45,23 @@ curl -X PUT http://localhost:8642/users/1/questions \
   -H "Content-Type: application/json" \
   -d '{"question_ids": [1, 2, 3]}'
 ```
+
+## Get All BYU Events
+
+```bash
+curl http://localhost:8642/events
+```
+
+## Get Event Conversation and Messages
+
+```bash
+curl http://localhost:8642/events/event-123/conversation
+```
+
+## Send Message to OpenAI
+
+```bash
+curl -X POST http://localhost:8642/ai/message \
+  -H "Content-Type: application/json" \
+  -d '{"message": "What is the capital of France?"}'
+```

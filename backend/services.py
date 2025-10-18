@@ -53,3 +53,37 @@ class UserService:
         db = get_db()
         response = db.table("user_progress").update({"questions_right": question_ids}).eq("user_id", user_id).execute()
         return response.data[0] if response.data else None
+
+
+class EventService:
+    @staticmethod
+    def get_all_events():
+        db = get_db()
+        response = db.table("byu_events").select("*").execute()
+        return response.data
+
+    @staticmethod
+    def get_conversation_by_event(event_id: str):
+        db = get_db()
+
+        # Get conversation for the event
+        conversation_response = db.table("conversations").select("*").eq("event_id", event_id).execute()
+
+        if not conversation_response.data:
+            return None
+
+        conversation = conversation_response.data[0]
+
+        # Get messages for the conversation
+        messages_response = (
+            db.table("messages")
+            .select("*")
+            .eq("conversation_id", conversation["conversation_id"])
+            .order("created_at")
+            .execute()
+        )
+
+        return {
+            "conversation": conversation,
+            "messages": messages_response.data
+        }

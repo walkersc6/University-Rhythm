@@ -1,10 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from services import ModuleService, QuestionService, UserService
+from services import ModuleService, QuestionService, UserService, EventService
+from openai_service import OpenAIService
 
 
 class UpdateQuestionsRequest(BaseModel):
     question_ids: list[int]
+
+
+class MessageRequest(BaseModel):
+    message: str
+    model: str = "gpt-4o-mini"
 
 app = FastAPI()
 
@@ -127,5 +133,60 @@ def update_questions_right(user_id: int, request: UpdateQuestionsRequest):
         return progress
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/events")
+def get_events():
+    """
+    Get all BYU events.
+
+    Returns:
+        JSON response with array of all BYU events
+    """
+    try:
+        events = EventService.get_all_events()
+        return {"events": events}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/events/{event_id}/conversation")
+def get_event_conversation(event_id: str):
+    """
+    Get conversation and messages for a specific event.
+
+    Args:
+        event_id: The ID of the event
+
+    Returns:
+        JSON response with conversation and messages
+    """
+    try:
+        result = EventService.get_conversation_by_event(event_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Conversation not found for event")
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/ai/message")
+def send_ai_message(request: MessageRequest):
+    """
+    Send a message to OpenAI and get a response.
+
+    Args:
+        request: Request body with message and optional model
+
+    Returns:
+        JSON response with AI response
+    """
+    try:
+        response = OpenAIService.send_message(request.message, request.model)
+        return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -70,35 +70,35 @@ struct TFQuestionsResponse: Codable {
     let questions: [TFQuestion]
 }
 
-//// New Model for a single Event
-//struct Event: Codable, Identifiable {
-//    let id: String
-//    let category: String
-//    let title: String
-//    let description: String
-//    let date: String
-//    let startTime: String
-//    let endTime: String
-//    let location: String
-//    let allDay: Bool
-//    let createdAt: Date
-//    let updatedAt: Date
-//
-//    // Maps the JSON keys to your Swift properties
-//    enum CodingKeys: String, CodingKey {
-//        case id, category, title, description, date, location
-//        case startTime = "start_time"
-//        case endTime = "end_time"
-//        case allDay = "all_day"
-//        case createdAt = "created_at"
-//        case updatedAt = "updated_at"
-//    }
-//}
-//
-//// Wrapper to handle the root "events" key in the JSON
-//struct EventsResponse: Codable {
-//    let events: [Event]
-//}
+// New Model for a single Event
+struct Event: Codable, Identifiable {
+    let id: String
+    let category: String
+    let title: String
+    let description: String
+    let date: String
+    let startTime: String
+    let endTime: String
+    let location: String
+    let allDay: Bool
+    let createdAt: Date
+    let updatedAt: Date
+
+    // Maps the JSON keys to your Swift properties
+    enum CodingKeys: String, CodingKey {
+        case id, category, title, description, date, location
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case allDay = "all_day"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+// Wrapper to handle the root "events" key in the JSON
+struct EventsResponse: Codable {
+    let events: [Event]
+}
 
 // MARK: - ViewModel
 

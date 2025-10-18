@@ -31,6 +31,8 @@ struct ChatView: View {
     @State private var messageText: String = ""
     @State private var isLoading: Bool = false
 
+    private let baseURL = "https://possible-stafani-hoco-byu-hack-d9d46b95.koyeb.app/"
+
     var body: some View {
         VStack(spacing: 0) {
             // Messages List
@@ -117,7 +119,7 @@ struct ChatView: View {
     }
 
     private func sendMessageToAI(message: String) async {
-        guard let url = URL(string: "https://possible-stafani-hoco-byu-hack-d9d46b95.koyeb.app/ai/message") else {
+        guard let url = URL(string: "\(baseURL)ai/message") else {
             await handleError(message: "Invalid URL")
             return
         }

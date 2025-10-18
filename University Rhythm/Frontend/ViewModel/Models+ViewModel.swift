@@ -70,6 +70,113 @@ struct TFQuestionsResponse: Codable {
     let questions: [TFQuestion]
 }
 
+// MARK: - Quiz Question Models (from /lessons/{id}/questions endpoint)
+enum QuestionType: String, Codable {
+    case multiple_choice = "multiple_choice"
+    case true_false = "true_false"
+}
+
+struct QuizQuestion: Codable, Identifiable {
+    let type: QuestionType
+    let question_id: Int
+    let lesson_id: Int
+    let question_text: String
+    let created_at: String
+
+    // Multiple choice fields
+    let a: String?
+    let b: String?
+    let c: String?
+    let d: String?
+
+    // True/False fields
+    let true_option: String?
+    let false_option: String?
+
+    // Answer can be string (for MC) or bool (for TF)
+    let answer: QuizAnswer
+
+    var id: Int { question_id }
+
+    enum CodingKeys: String, CodingKey {
+        case type, question_id, lesson_id, question_text, created_at
+        case a, b, c, d
+        case true_option, false_option
+        case answer
+    }
+}
+
+// Custom enum to handle both string and bool answers
+enum QuizAnswer: Codable {
+    case string(String)
+    case bool(Bool)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let stringValue = try? container.decode(String.self) {
+            self = .string(stringValue)
+        } else if let boolValue = try? container.decode(Bool.self) {
+            self = .bool(boolValue)
+        } else {
+            throw DecodingError.typeMismatch(
+                QuizAnswer.self,
+                DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Answer must be String or Bool")
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+struct AllQuestionsResponse: Codable {
+    let questions: [QuizQuestion]
+}
+
+// MARK: - User Progress Models
+struct UserProgress: Codable {
+    let user_id: Int
+    let questions_right: [Int]?
+    let created_at: String
+    let updated_at: String
+}
+
+struct UpdateQuestionsRequest: Codable {
+    let question_ids: [Int]
+}
+
+// MARK: - Module with Lessons Models
+struct LessonSummary: Codable, Identifiable {
+    let lesson_id: Int
+    let lesson_name: String
+
+    var id: Int { lesson_id }
+}
+
+struct ModuleWithLessons: Codable, Identifiable {
+    let module_id: Int
+    let module_name: String
+    let time_start: String
+    let time_end: String
+    let created_at: String
+    let lessons: [LessonSummary]
+
+    var id: Int { module_id }
+}
+
+struct ModulesWithLessonsResponse: Codable {
+    let modules: [ModuleWithLessons]
+}
+
+// MARK: - Event Model
+
 // New Model for a single Event
 struct Event: Codable, Identifiable {
     let id: String
@@ -120,6 +227,7 @@ struct EventsResponse: Codable {
 @MainActor
 class RoadmapViewModel: ObservableObject {
     @Published var modules: [Module] = []
+    @Published var modulesWithLessons: [ModuleWithLessons] = []
     @Published var lessons: [Lesson] = []
     @Published var mcQuestions: [MCQuestion] = []
     @Published var tfQuestions: [TFQuestion] = []
@@ -244,6 +352,122 @@ class RoadmapViewModel: ObservableObject {
                 print("❌ Failed to fetch or decode events:", error)
             }
         }
+
+    // MARK: - Fetch Modules with Lessons
+    func fetchModulesWithLessons() async {
+        guard let url = URL(string: "\(baseURL)/modules/with-lessons") else {
+            print("❌ Invalid modules-with-lessons URL")
+            return
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                print("❌ Server returned error status")
+                return
+            }
+
+            let decoded = try jsonDecoder.decode(ModulesWithLessonsResponse.self, from: data)
+            self.modulesWithLessons = decoded.modules
+            print("✅ Loaded \(decoded.modules.count) modules with lessons")
+        } catch {
+            print("❌ Failed to fetch modules with lessons:", error)
+        }
+    }
+
+    // Helper to get a specific lesson detail by ID
+    func fetchLessonDetail(lessonId: Int) async -> Lesson? {
+        // We need to find which module this lesson belongs to first
+        // Then fetch from /modules/{module_id}/lessons
+        // For now, we'll need to fetch all lessons or implement a single lesson endpoint
+        return nil
+    }
+
+    // MARK: - Fetch All Questions for Quiz
+    func fetchAllQuestions(lessonId: Int) async -> AllQuestionsResponse? {
+        guard let url = URL(string: "\(baseURL)/lessons/\(lessonId)/questions") else {
+            print("❌ Invalid questions URL")
+            return nil
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                print("❌ Server returned error status")
+                return nil
+            }
+
+            let decoded = try jsonDecoder.decode(AllQuestionsResponse.self, from: data)
+            let mcCount = decoded.questions.filter { $0.type == .multiple_choice }.count
+            let tfCount = decoded.questions.filter { $0.type == .true_false }.count
+            print("✅ Loaded \(mcCount) MC and \(tfCount) TF questions")
+            return decoded
+        } catch {
+            print("❌ Failed to fetch all questions:", error)
+            return nil
+        }
+    }
+
+    // MARK: - User Progress Management
+    func fetchUserProgress(userId: Int = 1) async -> UserProgress? {
+        guard let url = URL(string: "\(baseURL)/users/\(userId)/progress") else {
+            print("❌ Invalid user progress URL")
+            return nil
+        }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                print("❌ Server returned error status")
+                return nil
+            }
+
+            let decoded = try jsonDecoder.decode(UserProgress.self, from: data)
+            print("✅ Loaded user progress: \(decoded.questions_right?.count ?? 0) questions answered correctly")
+            return decoded
+        } catch {
+            print("❌ Failed to fetch user progress:", error)
+            return nil
+        }
+    }
+
+    func updateUserProgress(userId: Int = 1, questionIds: [Int]) async -> Bool {
+        guard let url = URL(string: "\(baseURL)/users/\(userId)/questions") else {
+            print("❌ Invalid update questions URL")
+            return false
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let requestBody = UpdateQuestionsRequest(question_ids: questionIds)
+
+        do {
+            let jsonData = try JSONEncoder().encode(requestBody)
+            request.httpBody = jsonData
+
+            let (_, response) = try await URLSession.shared.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                print("❌ Server returned error status when updating questions")
+                return false
+            }
+
+            print("✅ Successfully updated user progress with \(questionIds.count) question IDs")
+            return true
+        } catch {
+            print("❌ Failed to update user progress:", error)
+            return false
+        }
+    }
 
 }
 

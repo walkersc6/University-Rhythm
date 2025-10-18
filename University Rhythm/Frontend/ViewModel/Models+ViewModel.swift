@@ -70,194 +70,145 @@ struct TFQuestionsResponse: Codable {
     let questions: [TFQuestion]
 }
 
-// MARK: - ViewModel
+//// New Model for a single Event
+//struct Event: Codable, Identifiable {
+//    let id: String
+//    let category: String
+//    let title: String
+//    let description: String
+//    let date: String
+//    let startTime: String
+//    let endTime: String
+//    let location: String
+//    let allDay: Bool
+//    let createdAt: Date
+//    let updatedAt: Date
+//
+//    // Maps the JSON keys to your Swift properties
+//    enum CodingKeys: String, CodingKey {
+//        case id, category, title, description, date, location
+//        case startTime = "start_time"
+//        case endTime = "end_time"
+//        case allDay = "all_day"
+//        case createdAt = "created_at"
+//        case updatedAt = "updated_at"
+//    }
+//}
+//
+//// Wrapper to handle the root "events" key in the JSON
+//struct EventsResponse: Codable {
+//    let events: [Event]
+//}
 
 // MARK: - ViewModel
+
 @MainActor
 class RoadmapViewModel: ObservableObject {
     @Published var modules: [Module] = []
-    @Published var lessonsByModule: [Int: [Lesson]] = [:]
-    @Published var mcQuestionsByLesson: [Int: [MCQuestion]] = [:]
-    @Published var tfQuestionsByLesson: [Int: [TFQuestion]] = [:]
+    @Published var lessons: [Lesson] = []
+    @Published var mcQuestions: [MCQuestion] = []
+    @Published var tfQuestions: [TFQuestion] = []
 
-    private let baseURL = "http://localhost:8642"
+    private let baseURL = "https://possible-stafani-hoco-byu-hack-d9d46b95.koyeb.app"
+    
+    // JSONDecoder setup (no special date decoding needed here since times are Strings)
     private let jsonDecoder = JSONDecoder()
 
-    // +++ Restored network fetching code +++
+    // Fetch modules
+//    func fetchModules() async {
+//        guard let url = URL(string: "\(baseURL)/modules") else {
+//            print("Invalid modules URL")
+//            return
+//        }
+//        do {
+//            let (data, _) = try await URLSession.shared.data(from: url)
+//            let response = try jsonDecoder.decode(ModulesResponse.self, from: data)
+//            modules = response.modules
+//        } catch {
+//            print("Failed to fetch modules:", error)
+//        }
+//    }
+
     func fetchModules() async {
         guard let url = URL(string: "\(baseURL)/modules") else {
-            print("Error: Invalid URL for modules")
+            print("❌ Invalid modules URL")
             return
         }
+        print("🌐 Fetching modules from:", url.absoluteString)
+
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let response = try jsonDecoder.decode(ModulesResponse.self, from: data)
-            self.modules = response.modules
+            let (data, response) = try await URLSession.shared.data(from: url)
+            if let httpResponse = response as? HTTPURLResponse {
+                print("✅ Response status:", httpResponse.statusCode)
+            }
+            print("📦 Raw JSON:", String(data: data, encoding: .utf8) ?? "nil")
+
+            let decoded = try jsonDecoder.decode(ModulesResponse.self, from: data)
+            DispatchQueue.main.async {
+                self.modules = decoded.modules
+                print("✅ Loaded \(decoded.modules.count) modules")
+            }
         } catch {
-            print("Error fetching modules: \(error)")
+            print("❌ Failed to fetch modules:", error)
         }
     }
-    
+
+    // Fetch lessons for a module
     func fetchLessons(moduleId: Int) async {
-        if lessonsByModule[moduleId] != nil { return } // Don't re-fetch if already loaded
-        
         guard let url = URL(string: "\(baseURL)/modules/\(moduleId)/lessons") else {
-            print("Error: Invalid URL for lessons in module \(moduleId)")
+            print("Invalid lessons URL")
             return
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let response = try jsonDecoder.decode(LessonsResponse.self, from: data)
-            lessonsByModule[moduleId] = response.lessons
+            lessons = response.lessons
         } catch {
-            print("Error fetching lessons for module \(moduleId): \(error)")
+            print("Failed to fetch lessons:", error)
         }
     }
+    
+    func getLessonsForModule(_ moduleId: Int) -> [Lesson] {
+        lessons.filter { $0.module_id == moduleId }
+    }
 
+    // Fetch multiple choice questions for a lesson
     func fetchMCQuestions(lessonId: Int) async {
-        if mcQuestionsByLesson[lessonId] != nil { return } // Don't re-fetch
-        
         guard let url = URL(string: "\(baseURL)/lessons/\(lessonId)/questions/multiple_choice") else {
-            print("Error: Invalid URL for MC questions in lesson \(lessonId)")
+            print("Invalid MC questions URL")
             return
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let response = try jsonDecoder.decode(MCQuestionsResponse.self, from: data)
-            mcQuestionsByLesson[lessonId] = response.questions
+            mcQuestions = response.questions
         } catch {
-            print("Error fetching MC questions for lesson \(lessonId): \(error)")
+            print("Failed to fetch MC questions:", error)
         }
     }
 
+    func getMCQuestionsForLesson(_ lessonId: Int) -> [MCQuestion] {
+        mcQuestions.filter { $0.lesson_id == lessonId }
+    }
+
+    // Fetch true/false questions for a lesson
     func fetchTFQuestions(lessonId: Int) async {
-        if tfQuestionsByLesson[lessonId] != nil { return } // Don't re-fetch
-        
         guard let url = URL(string: "\(baseURL)/lessons/\(lessonId)/questions/true_false") else {
-            print("Error: Invalid URL for TF questions in lesson \(lessonId)")
+            print("Invalid TF questions URL")
             return
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let response = try jsonDecoder.decode(TFQuestionsResponse.self, from: data)
-            tfQuestionsByLesson[lessonId] = response.questions
+            tfQuestions = response.questions
         } catch {
-            print("Error fetching TF questions for lesson \(lessonId): \(error)")
+            print("Failed to fetch TF questions:", error)
         }
     }
     
-    // --- Getter functions ---
-    func getLessonsForModule(_ moduleId: Int) -> [Lesson] { lessonsByModule[moduleId] ?? [] }
-    func getMCQuestionsForLesson(_ lessonId: Int) -> [MCQuestion] { mcQuestionsByLesson[lessonId] ?? [] }
-    func getTFQuestionsForLesson(_ lessonId: Int) -> [TFQuestion] { tfQuestionsByLesson[lessonId] ?? [] }
+    func getTFQuestionsForLesson(_ lessonId: Int) -> [TFQuestion] {
+        tfQuestions.filter { $0.lesson_id == lessonId }
+    }
+
 }
-//@MainActor
-//class RoadmapViewModel: ObservableObject {
-//    @Published var modules: [Module] = []
-//    @Published var lessons: [Lesson] = []
-//    @Published var mcQuestions: [MCQuestion] = []
-//    @Published var tfQuestions: [TFQuestion] = []
-//
-//    private let baseURL = "http://localhost:8642"
-//    
-//    // JSONDecoder setup (no special date decoding needed here since times are Strings)
-//    private let jsonDecoder = JSONDecoder()
-//
-//    // Fetch modules
-////    func fetchModules() async {
-////        guard let url = URL(string: "\(baseURL)/modules") else {
-////            print("Invalid modules URL")
-////            return
-////        }
-////        do {
-////            let (data, _) = try await URLSession.shared.data(from: url)
-////            let response = try jsonDecoder.decode(ModulesResponse.self, from: data)
-////            modules = response.modules
-////        } catch {
-////            print("Failed to fetch modules:", error)
-////        }
-////    }
-//
-//    func fetchModules() async {
-//        guard let url = URL(string: "\(baseURL)/modules") else {
-//            print("❌ Invalid modules URL")
-//            return
-//        }
-//        print("🌐 Fetching modules from:", url.absoluteString)
-//
-//        do {
-//            let (data, response) = try await URLSession.shared.data(from: url)
-//            if let httpResponse = response as? HTTPURLResponse {
-//                print("✅ Response status:", httpResponse.statusCode)
-//            }
-//            print("📦 Raw JSON:", String(data: data, encoding: .utf8) ?? "nil")
-//
-//            let decoded = try jsonDecoder.decode(ModulesResponse.self, from: data)
-//            DispatchQueue.main.async {
-//                self.modules = decoded.modules
-//                print("✅ Loaded \(decoded.modules.count) modules")
-//            }
-//        } catch {
-//            print("❌ Failed to fetch modules:", error)
-//        }
-//    }
-//
-//    // Fetch lessons for a module
-//    func fetchLessons(moduleId: Int) async {
-//        guard let url = URL(string: "\(baseURL)/modules/\(moduleId)/lessons") else {
-//            print("Invalid lessons URL")
-//            return
-//        }
-//        do {
-//            let (data, _) = try await URLSession.shared.data(from: url)
-//            let response = try jsonDecoder.decode(LessonsResponse.self, from: data)
-//            lessons = response.lessons
-//        } catch {
-//            print("Failed to fetch lessons:", error)
-//        }
-//    }
-//    
-//    func getLessonsForModule(_ moduleId: Int) -> [Lesson] {
-//        lessons.filter { $0.module_id == moduleId }
-//    }
-//
-//    // Fetch multiple choice questions for a lesson
-//    func fetchMCQuestions(lessonId: Int) async {
-//        guard let url = URL(string: "\(baseURL)/lessons/\(lessonId)/questions/multiple_choice") else {
-//            print("Invalid MC questions URL")
-//            return
-//        }
-//        do {
-//            let (data, _) = try await URLSession.shared.data(from: url)
-//            let response = try jsonDecoder.decode(MCQuestionsResponse.self, from: data)
-//            mcQuestions = response.questions
-//        } catch {
-//            print("Failed to fetch MC questions:", error)
-//        }
-//    }
-//
-//    func getMCQuestionsForLesson(_ lessonId: Int) -> [MCQuestion] {
-//        mcQuestions.filter { $0.lesson_id == lessonId }
-//    }
-//
-//    // Fetch true/false questions for a lesson
-//    func fetchTFQuestions(lessonId: Int) async {
-//        guard let url = URL(string: "\(baseURL)/lessons/\(lessonId)/questions/true_false") else {
-//            print("Invalid TF questions URL")
-//            return
-//        }
-//        do {
-//            let (data, _) = try await URLSession.shared.data(from: url)
-//            let response = try jsonDecoder.decode(TFQuestionsResponse.self, from: data)
-//            tfQuestions = response.questions
-//        } catch {
-//            print("Failed to fetch TF questions:", error)
-//        }
-//    }
-//    
-//    func getTFQuestionsForLesson(_ lessonId: Int) -> [TFQuestion] {
-//        tfQuestions.filter { $0.lesson_id == lessonId }
-//    }
-//
-//}
-//
+

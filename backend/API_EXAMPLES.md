@@ -25,3 +25,23 @@ curl http://localhost:8642/modules/1/lessons
 ```bash
 curl http://localhost:8642/lessons/1/questions
 ```
+
+## Create User 1
+
+```bash
+curl -X POST http://localhost:8642/users/1
+```
+
+## Get User 1 Progress
+
+```bash
+curl http://localhost:8642/users/1/progress
+```
+
+## Update User 1 Questions Right
+
+```bash
+curl -X PUT http://localhost:8642/users/1/questions \
+  -H "Content-Type: application/json" \
+  -d '{"question_ids": [1, 2, 3]}'
+```

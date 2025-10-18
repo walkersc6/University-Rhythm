@@ -220,6 +220,96 @@ True/false questions also include:
 - `false_option` (string) - Text for the false option
 - `answer` (bool) - Correct answer (true or false)
 
+#### POST /users/{user_id}
+Create a new user.
+
+**Parameters:**
+- `user_id` (int, path) - The ID of the user to create
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:8642/users/1
+```
+
+**Response:**
+```json
+{
+  "user_id": 1,
+  "questions_right": [],
+  "created_at": "2025-01-01T00:00:00",
+  "updated_at": "2025-01-01T00:00:00"
+}
+```
+
+**Response Fields:**
+- `user_id` (int) - Unique identifier for the user
+- `questions_right` (array of int) - IDs of questions answered correctly
+- `created_at` (timestamp) - When the user was created
+- `updated_at` (timestamp) - Last update timestamp
+
+#### GET /users/{user_id}/progress
+Get user progress including questions answered correctly.
+
+**Parameters:**
+- `user_id` (int, path) - The ID of the user
+
+**Example Request:**
+```bash
+curl http://localhost:8642/users/1/progress
+```
+
+**Response:**
+```json
+{
+  "user_id": 1,
+  "questions_right": [1, 2, 5],
+  "created_at": "2025-01-01T00:00:00",
+  "updated_at": "2025-01-01T12:30:00"
+}
+```
+
+**Response Fields:**
+- `user_id` (int) - Unique identifier for the user
+- `questions_right` (array of int) - IDs of questions answered correctly
+- `created_at` (timestamp) - When the user was created
+- `updated_at` (timestamp) - Last update timestamp
+
+#### PUT /users/{user_id}/questions
+Update the list of questions answered correctly by a user.
+
+**Parameters:**
+- `user_id` (int, path) - The ID of the user
+
+**Request Body:**
+```json
+{
+  "question_ids": [1, 2, 3]
+}
+```
+
+**Example Request:**
+```bash
+curl -X PUT http://localhost:8642/users/1/questions \
+  -H "Content-Type: application/json" \
+  -d '{"question_ids": [1, 2, 3]}'
+```
+
+**Response:**
+```json
+{
+  "user_id": 1,
+  "questions_right": [1, 2, 3],
+  "created_at": "2025-01-01T00:00:00",
+  "updated_at": "2025-01-01T13:45:00"
+}
+```
+
+**Response Fields:**
+- `user_id` (int) - Unique identifier for the user
+- `questions_right` (array of int) - Updated IDs of questions answered correctly
+- `created_at` (timestamp) - When the user was created
+- `updated_at` (timestamp) - Last update timestamp
+
 ## Environment Variables
 
 - `PORT` - Server port (default: 8642)

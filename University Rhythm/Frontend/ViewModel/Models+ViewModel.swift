@@ -70,35 +70,35 @@ struct TFQuestionsResponse: Codable {
     let questions: [TFQuestion]
 }
 
-//// New Model for a single Event
-//struct Event: Codable, Identifiable {
-//    let id: String
-//    let category: String
-//    let title: String
-//    let description: String
-//    let date: String
-//    let startTime: String
-//    let endTime: String
-//    let location: String
-//    let allDay: Bool
-//    let createdAt: Date
-//    let updatedAt: Date
-//
-//    // Maps the JSON keys to your Swift properties
-//    enum CodingKeys: String, CodingKey {
-//        case id, category, title, description, date, location
-//        case startTime = "start_time"
-//        case endTime = "end_time"
-//        case allDay = "all_day"
-//        case createdAt = "created_at"
-//        case updatedAt = "updated_at"
-//    }
-//}
+// New Model for a single Event
+struct Event: Codable, Identifiable {
+    let id: String
+    let category: String
+    let title: String
+    let description: String
+    let date: String
+    let startTime: String
+    let endTime: String
+    let location: String
+    let allDay: Bool
+    let createdAt: String
+    let updatedAt: String
+
+    // Maps the JSON keys to your Swift properties
+    enum CodingKeys: String, CodingKey {
+        case id, category, title, description, date, location
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case allDay = "all_day"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
 //
 //// Wrapper to handle the root "events" key in the JSON
-//struct EventsResponse: Codable {
-//    let events: [Event]
-//}
+struct EventsResponse: Codable {
+    let events: [Event]
+}
 
 // MARK: - ViewModel
 
@@ -108,12 +108,16 @@ class RoadmapViewModel: ObservableObject {
     @Published var lessons: [Lesson] = []
     @Published var mcQuestions: [MCQuestion] = []
     @Published var tfQuestions: [TFQuestion] = []
+    @Published var events: [Event] = []
 
     private let baseURL = "https://possible-stafani-hoco-byu-hack-d9d46b95.koyeb.app"
     
     // JSONDecoder setup (no special date decoding needed here since times are Strings)
     private let jsonDecoder = JSONDecoder()
-
+//    let decoder = JSONDecoder()
+//            decoder.dateDecodingStrategy = .iso8601
+//            return decoder
+//        }()
     // Fetch modules
 //    func fetchModules() async {
 //        guard let url = URL(string: "\(baseURL)/modules") else {
@@ -209,6 +213,22 @@ class RoadmapViewModel: ObservableObject {
     func getTFQuestionsForLesson(_ lessonId: Int) -> [TFQuestion] {
         tfQuestions.filter { $0.lesson_id == lessonId }
     }
+    
+    func fetchEvents() async {
+            guard let url = URL(string: "\(baseURL)/events") else {
+                print("❌ Invalid events URL")
+                return
+            }
+
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                let response = try jsonDecoder.decode(EventsResponse.self, from: data)
+                // Update the 'events' array on the main thread
+                self.events = response.events
+            } catch {
+                print("❌ Failed to fetch or decode events:", error)
+            }
+        }
 
 }
 

@@ -12,12 +12,13 @@ import SwiftUI
 struct EventsList: View {
     @ObservedObject var viewModel: RoadmapViewModel
     @State private var isLoading = false
-    
+
     // 1. Add state for the calendar manager and alerts
     @StateObject private var calendarManager = CalendarManager()
     @State private var showAlert = false
     @State private var alertMessage = ""
-    
+    @State private var selectedEventForChat: Event?
+
     var body: some View {
         ZStack {
             if isLoading {
@@ -42,43 +43,36 @@ struct EventsList: View {
                         }
                         
                         Spacer()
-                        
-                        //                        VStack {
-                        //                            Button("Run Permission Test") {
-                        //                                Task {
-                        //                                    await calendarManager.debugRequestAccess()
-                        //                                }
-                        //                            }
-                        //                            .buttonStyle(.borderedProminent)
-                        //                            .tint(.red)
-                        //                            Spacer() // Pushes the button to the top
-                        //                        }
-                        //                        .zIndex(1) // Ensures the button is on top of the list
-                        //
-                        //                        if isLoading {
-                        //                            // ...
-                        //                        } else if viewModel.events.isEmpty {
-                        //                            // ...
-                        //                        } else {
-                        //                            List(viewModel.events) { event in
-                        //                                // ... your list row code
-                        //                            }
-                        //                        }
-                        
-                        Button {
-                            // Call our new function when the button is tapped
-                            addEventToCalendar(event)
-                        } label: {
-                            Image(systemName: "calendar.badge.plus")
-                                .font(.title2)
+
+                        HStack(spacing: 12) {
+                            // Chat button
+                            Button {
+                                selectedEventForChat = event
+                            } label: {
+                                Image(systemName: "message.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(.borderless)
+
+                            // Add to calendar button
+                            Button {
+                                addEventToCalendar(event)
+                            } label: {
+                                Image(systemName: "calendar.badge.plus")
+                                    .font(.title2)
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless) // Use .borderless for buttons in a List row
                     }
                     .padding(.vertical, 8)
                 }
             }
         }
         .navigationTitle("Events")
+        .navigationDestination(item: $selectedEventForChat) { event in
+            EventChatView(event: event)
+        }
         .task {
             if viewModel.events.isEmpty {
                 isLoading = true

@@ -178,7 +178,7 @@ struct ModulesWithLessonsResponse: Codable {
 // MARK: - Event Model
 
 // New Model for a single Event
-struct Event: Codable, Identifiable {
+struct Event: Codable, Identifiable, Hashable {
     let id: String
     let category: String
     let title: String

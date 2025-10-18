@@ -44,4 +44,26 @@ class CalendarManager: ObservableObject {
         // Save the event
         try eventStore.save(event, span: .thisEvent)
     }
+    
+    // In CalendarManager.swift
+
+    // Add this new function for testing purposes
+    func debugRequestAccess() async {
+        print("--- STARTING PERMISSION DEBUG ---")
+        let initialStatus = EKEventStore.authorizationStatus(for: .event)
+        print("Initial Status Raw Value: \(initialStatus.rawValue) (0 means notDetermined)")
+
+        print("Attempting to request write-only access...")
+        do {
+            // This is the system call that requires the Info.plist key
+            let granted = try await self.eventStore.requestWriteOnlyAccessToEvents()
+            print("Request completed. The system returned 'granted': \(granted)")
+        } catch {
+            print("The request to the system threw an error: \(error)")
+        }
+
+        let finalStatus = EKEventStore.authorizationStatus(for: .event)
+        print("Final Status Raw Value: \(finalStatus.rawValue) (2 means denied, 6 means writeOnly)")
+        print("--- PERMISSION DEBUG COMPLETE ---")
+    }
 }

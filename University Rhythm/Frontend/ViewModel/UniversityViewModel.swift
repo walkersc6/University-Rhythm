@@ -5,8 +5,8 @@
 //  Created by Sarah Walker on 10/17/25.
 //
 
-import Foundation
-
-@Observable class UniversityViewModel:  {
-    
-}
+//import Foundation
+//
+//@Observable class UniversityViewModel:  {
+//    
+//}

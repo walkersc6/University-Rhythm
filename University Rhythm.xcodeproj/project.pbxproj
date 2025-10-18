@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3C32D44F2EA36F5C002B5682 /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 3C32D44E2EA36F5C002B5682 /* MarkdownUI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		9C9508872EA3216400F306DB /* University Rhythm.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "University Rhythm.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C32D44F2EA36F5C002B5682 /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = "University Rhythm";
 			packageProductDependencies = (
+				3C32D44E2EA36F5C002B5682 /* MarkdownUI */,
 			);
 			productName = "University Rhythm";
 			productReference = 9C9508872EA3216400F306DB /* University Rhythm.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 9C95087E2EA3216400F306DB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3C32D44D2EA36F5C002B5682 /* XCRemoteSwiftPackageReference "MarkdownUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9C9508882EA3216400F306DB /* Products */;
 			projectDirPath = "";
@@ -320,6 +329,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3C32D44D2EA36F5C002B5682 /* XCRemoteSwiftPackageReference "MarkdownUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/MarkdownUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3C32D44E2EA36F5C002B5682 /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3C32D44D2EA36F5C002B5682 /* XCRemoteSwiftPackageReference "MarkdownUI" */;
+			productName = MarkdownUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9C95087F2EA3216400F306DB /* Project object */;
 }

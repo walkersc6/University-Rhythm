@@ -11,7 +11,7 @@ import SwiftUI
 struct University_RhythmApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            IntroView()
         }
     }
 }
